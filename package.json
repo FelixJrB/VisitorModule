@@ -1,7 +1,7 @@
 {
-  "name": "ts-cli-template",
+  "name": "VisitorModule",
   "version": "1.0.0",
-  "description": "1DV610 - TypeScript CLI Template / Boilerplate",
+  "description": "A module made for course 1DV610 in Typescript, For tracking Visitors to a website",
   "type": "module",
   "main": "dist/app.js",
   "bin": {
@@ -25,9 +25,9 @@
   },
   "contributors": [
     "1dv610 Organization",
-    "YOUR NAME <YOUR EMAIL>"
+    "Felix Berglund <fb222rs@gmail.com>"
   ],
-  "license": "Unlicense",
+  "license": "MIT",
   "private": false,
   "devDependencies": {
     "@eslint/js": "^10.0.1",
