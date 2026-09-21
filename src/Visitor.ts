@@ -1,21 +1,22 @@
 type VisitorData = {
-  uniqueId: string
-  ipAddress: string
+  uniqueId: number
+  ipAddress?: string
   location: string
-  deviceType: string
+  deviceType: DeviceType
   operatingSystem: OperatingSystem
 }
 
+type DeviceType = 'Desktop' | 'Mobile' | 'Tablet' | 'Tv' | 'Unknown'
 type OperatingSystem = 'Windows' | 'MacOs' | 'Linux' | 'Unknown'
 
 /**
  * A class representing a visitor with various properties such as unique ID, IP address, location, device type, and operating system.
  */
 export class Visitor {
-  readonly uniqueId: string
-  readonly ipAddress: string
+  readonly uniqueId: number
+  readonly ipAddress?: string
   readonly location: string
-  readonly deviceType: string
+  readonly deviceType: DeviceType
   readonly operatingSystem: OperatingSystem
 
   /**
