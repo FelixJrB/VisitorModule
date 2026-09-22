@@ -1,6 +1,17 @@
 import { Visitor } from './Visitor.js'
 
 /**
+ * A type representing visitor information, including an optional IP address and a user agent string.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
+ */
+type visitorInformation = {
+  ipAddress?: string
+  userAgent: string
+}
+
+/**
  * A class representing a visitor tracker that manages a collection of visitors.
  *
  * The VisitorTracker class maintains a unique ID and a map of visitors, allowing for the tracking and management of visitor data.
@@ -17,6 +28,7 @@ export class VisitorTracker {
    */
   constructor() {
     this.uniqueId = 0
+    this.siteVisitor
   }
 
   /**
@@ -35,5 +47,31 @@ export class VisitorTracker {
    */
   getUniqueId() {
     return this.uniqueId
+  }
+
+  /**
+   * Tracks the visitors in the siteVisitor map.
+   *
+   * If the visitor has not already visited the site, a new Visitor object is created and added to the map.
+   *
+   * @param request - An object containing visitor information, including an optional IP address and a user agent string.
+   * @returns The visitor, either newly created or previously stored.
+   */
+  track(request: visitorInformation) {
+    const key = request.userAgent + '|' + request.ipAddress
+    const alreadyVisited = this.siteVisitor.get(key)
+    if (!alreadyVisited) {
+      this.uniqueId++
+      const visitor = new Visitor({
+        uniqueId: this.uniqueId,
+        ipAddress: request.ipAddress,
+        location: 'Unknown',
+        deviceType: 'Unknown',
+        operatingSystem: 'Unknown',
+      })
+      this.siteVisitor.set(key, visitor)
+      return visitor
+    }
+    return alreadyVisited
   }
 }
