@@ -6,8 +6,8 @@ type VisitorData = {
   operatingSystem: OperatingSystem
 }
 
-type DeviceType = 'Desktop' | 'Mobile' | 'Tablet' | 'Tv' | 'Unknown'
-type OperatingSystem = 'Windows' | 'MacOs' | 'IOS' | 'Android' | 'Linux' | 'Unknown'
+export type DeviceType = 'Desktop' | 'Mobile' | 'Tablet' | 'Tv' | 'Unknown'
+export type OperatingSystem = 'Windows' | 'MacOs' | 'IOS' | 'Android' | 'Linux' | 'Unknown'
 
 /**
  * A class representing a visitor with various properties such as unique ID, IP address, location, device type, and operating system.
