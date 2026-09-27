@@ -37,4 +37,15 @@ describe('VisitorTracker', () => {
     expect(tracker.getVisitors().size).toBe(2)
     expect(secondVisitor.uniqueId).not.toBe(firstVisitor.uniqueId)
   })
+
+  it('sets the correct device type and operating system for a visitor', () => {
+    const tracker = new VisitorTracker()
+    const visitorInfo = tracker.track({
+      ipAddress: '193.178.1.1',
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+    })
+    expect(visitorInfo.deviceType).toBe('Desktop')
+    expect(visitorInfo.operatingSystem).toBe('Windows')
+  })
 })
