@@ -1,4 +1,5 @@
 import { Visitor } from './Visitor.js'
+import { UserAgentParser } from './UserAgentParser.js'
 
 /**
  * A type representing visitor information, including an optional IP address and a user agent string.
@@ -19,6 +20,7 @@ type visitorInformation = {
 export class VisitorTracker {
   private uniqueId: number
   private siteVisitor = new Map<string, Visitor>()
+  private parser = new UserAgentParser()
 
   /**
    * Constructor for the VisitorTracker class.
@@ -66,8 +68,8 @@ export class VisitorTracker {
         uniqueId: this.uniqueId,
         ipAddress: request.ipAddress,
         location: 'Unknown',
-        deviceType: 'Unknown',
-        operatingSystem: 'Unknown',
+        deviceType: this.parser.parseDeviceType(request.userAgent),
+        operatingSystem: this.parser.parseOperatingSystem(request.userAgent),
       })
       this.siteVisitor.set(key, visitor)
       return visitor
