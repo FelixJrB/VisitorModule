@@ -1,17 +1,16 @@
 {
-  "name": "VisitorModule",
+  "name": "visitor-module",
   "version": "1.0.0",
-  "description": "A module made for course 1DV610 in Typescript, For tracking Visitors to a website",
+  "description": "A Typescript module made for tracking Visitors to a website",
   "type": "module",
-  "main": "dist/app.js",
-  "bin": {
-    "ts-cli-template": "dist/app.js"
-  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
   "engines": {
     "node": ">=24.12.0"
   },
   "scripts": {
-    "start": "tsx src/app.ts",
+    "start": "tsx test-app/app.ts",
     "build": "tsc -p tsconfig.build.json",
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
