@@ -34,7 +34,7 @@ export class VisitorTracker {
   }
 
   /**
-   * Gets the visitors stored in the siteVisitor map.
+   * Gets all visitors tracked so far.
    *
    * @returns A map containing the visitors.
    */
@@ -43,12 +43,21 @@ export class VisitorTracker {
   }
 
   /**
-   * Gets the unique ID of the visitor tracker.
+   * Gets the number of unique visitors tracked so far.
    *
    * @returns The unique ID.
    */
   getUniqueId() {
     return this.uniqueId
+  }
+
+  /**
+   * Gets the visitors size stored.
+   *
+   * @returns The count of visitors.
+   */
+  getVisitorCount() {
+    return this.siteVisitor.size
   }
 
   /**

@@ -48,4 +48,11 @@ describe('VisitorTracker', () => {
     expect(visitorInfo.deviceType).toBe('Desktop')
     expect(visitorInfo.operatingSystem).toBe('Windows')
   })
+
+  it('returns the correct count of visitors', () => {
+    const tracker = new VisitorTracker()
+    tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+    tracker.track({ ipAddress: '192.168.1.2', userAgent: 'Mozilla/5.0' })
+    expect(tracker.getVisitorCount()).toBe(2)
+  })
 })
