@@ -5,8 +5,7 @@
 ### Linux ###
 *~
 
-src/app.test.ts
-src/app.ts
+docs/
 
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
