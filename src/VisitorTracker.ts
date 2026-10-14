@@ -7,7 +7,7 @@ import { UserAgentParser } from './UserAgentParser.js'
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
  */
-type visitorInformation = {
+type VisitRequest = {
   ipAddress?: string
   userAgent: string
 }
@@ -18,8 +18,8 @@ type visitorInformation = {
  * The VisitorTracker class maintains a unique ID and a map of visitors, allowing for the tracking and management of visitor data.
  */
 export class VisitorTracker {
-  private uniqueId: number
-  private siteVisitor = new Map<string, Visitor>()
+  private lastAssignedId: number
+  private visitors = new Map<string, Visitor>()
   private parser = new UserAgentParser()
 
   /**
@@ -29,8 +29,7 @@ export class VisitorTracker {
    * The unique ID is set to 0 by default.
    */
   constructor() {
-    this.uniqueId = 0
-    this.siteVisitor
+    this.lastAssignedId = 0
   }
 
   /**
@@ -39,7 +38,7 @@ export class VisitorTracker {
    * @returns A map containing the visitors.
    */
   getVisitors() {
-    return this.siteVisitor
+    return this.visitors
   }
 
   /**
@@ -48,7 +47,7 @@ export class VisitorTracker {
    * @returns The unique ID.
    */
   getUniqueId() {
-    return this.uniqueId
+    return this.lastAssignedId
   }
 
   /**
@@ -57,7 +56,7 @@ export class VisitorTracker {
    * @returns The count of visitors.
    */
   getVisitorCount() {
-    return this.siteVisitor.size
+    return this.visitors.size
   }
 
   /**
@@ -68,19 +67,19 @@ export class VisitorTracker {
    * @param request - An object containing visitor information, including an optional IP address and a user agent string.
    * @returns The visitor, either newly created or previously stored.
    */
-  track(request: visitorInformation) {
+  track(request: VisitRequest) {
     const key = request.userAgent + '|' + request.ipAddress
-    const alreadyVisited = this.siteVisitor.get(key)
+    const alreadyVisited = this.visitors.get(key)
     if (!alreadyVisited) {
-      this.uniqueId++
+      this.lastAssignedId++
       const visitor = new Visitor({
-        uniqueId: this.uniqueId,
+        uniqueId: this.lastAssignedId,
         ipAddress: request.ipAddress,
         location: 'Unknown',
         deviceType: this.parser.parseDeviceType(request.userAgent),
         operatingSystem: this.parser.parseOperatingSystem(request.userAgent),
       })
-      this.siteVisitor.set(key, visitor)
+      this.visitors.set(key, visitor)
       return visitor
     }
     return alreadyVisited
