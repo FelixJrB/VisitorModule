@@ -1,5 +1,6 @@
 import { Visitor } from './Visitor.js'
 import { UserAgentParser } from './UserAgentParser.js'
+import { VisitorKey } from './VisitorKey.js'
 
 /**
  * A type representing visitor information, including an optional IP address and a user agent string.
@@ -68,20 +69,31 @@ export class VisitorTracker {
    * @returns The visitor, either newly created or previously stored.
    */
   track(request: VisitRequest) {
-    const key = request.userAgent + '|' + request.ipAddress
+    const key = new VisitorKey(request).toString()
     const alreadyVisited = this.visitors.get(key)
-    if (!alreadyVisited) {
-      this.lastAssignedId++
-      const visitor = new Visitor({
-        uniqueId: this.lastAssignedId,
-        ipAddress: request.ipAddress,
-        location: 'Unknown',
-        deviceType: this.parser.parseDeviceType(request.userAgent),
-        operatingSystem: this.parser.parseOperatingSystem(request.userAgent),
-      })
-      this.visitors.set(key, visitor)
-      return visitor
+    if (alreadyVisited) {
+      return alreadyVisited
     }
-    return alreadyVisited
+    return this.registerNewVisitor(key, request)
+  }
+
+  /**
+   * Creates a visitor for a request that has not been seen before, and stores it.
+   *
+   * @param key - The key the visitor is stored under.
+   * @param request - The address and user agent the visit was made from.
+   * @returns The newly created visitor.
+   */
+  private registerNewVisitor(key: string, request: VisitRequest): Visitor {
+    this.lastAssignedId++
+    const visitor = new Visitor({
+      uniqueId: this.lastAssignedId,
+      ipAddress: request.ipAddress,
+      location: 'Unknown',
+      deviceType: this.parser.parseDeviceType(request.userAgent),
+      operatingSystem: this.parser.parseOperatingSystem(request.userAgent),
+    })
+    this.visitors.set(key, visitor)
+    return visitor
   }
 }
