@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { UserAgentParser } from './UserAgentParser.js'
-import { type DeviceType, type OperatingSystem } from './Visitor.js'
+import { type DeviceType, type OperatingSystem } from './types.js'
 
 describe('UserAgentParser', () => {
   const parser = new UserAgentParser()

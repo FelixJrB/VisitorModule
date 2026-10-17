@@ -55,4 +55,79 @@ describe('VisitorTracker', () => {
     tracker.track({ ipAddress: '192.168.1.2', userAgent: 'Mozilla/5.0' })
     expect(tracker.getVisitorCount()).toBe(2)
   })
+
+  it('finds a visitor by the id it was given', () => {
+    const tracker = new VisitorTracker()
+    tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+    const second = tracker.track({ ipAddress: '192.168.1.2', userAgent: 'Mozilla/5.0' })
+
+    expect(tracker.getVisitorById(second.uniqueId)).toBe(second)
+  })
+
+  it('returns undefined when no visitor has the given id', () => {
+    const tracker = new VisitorTracker()
+    tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+
+    expect(tracker.getVisitorById(99)).toBeUndefined()
+  })
+
+  it('returns a copy of the visitors, so the tracker cannot be changed from outside', () => {
+    const tracker = new VisitorTracker()
+    tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+
+    tracker.getVisitors().clear()
+
+    expect(tracker.getVisitorCount()).toBe(1)
+  })
+
+  it('tells a listener about a visitor the first time, but not when they return', () => {
+    const tracker = new VisitorTracker()
+    const announced: number[] = []
+    tracker.onNewVisitor((visitor) => announced.push(visitor.uniqueId))
+
+    tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+    tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+    tracker.track({ ipAddress: '192.168.1.2', userAgent: 'Mozilla/5.0' })
+
+    expect(announced).toEqual([1, 2])
+  })
+
+  it('keeps tracking even when a listener fails', () => {
+    const tracker = new VisitorTracker()
+    tracker.onNewVisitor(() => {
+      throw new Error('the webhook is down')
+    })
+
+    const visitor = tracker.track({ ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0' })
+
+    expect(visitor.uniqueId).toBe(1)
+    expect(tracker.getVisitorCount()).toBe(1)
+  })
+
+  it('stores the location the caller looked up', () => {
+    const tracker = new VisitorTracker()
+
+    const visitor = tracker.track({
+      ipAddress: '83.250.10.4',
+      userAgent: 'Mozilla/5.0',
+      location: 'Växjö, Sweden',
+    })
+
+    expect(visitor.location).toBe('Växjö, Sweden')
+  })
+
+  it('falls back to Unknown when no location is given', () => {
+    const tracker = new VisitorTracker()
+
+    const visitor = tracker.track({ ipAddress: '83.250.10.4', userAgent: 'Mozilla/5.0' })
+
+    expect(visitor.location).toBe('Unknown')
+  })
+
+  it('stores the address in one normalised form', () => {
+    const tracker = new VisitorTracker()
+    const visitor = tracker.track({ ipAddress: '::ffff:83.250.10.4', userAgent: 'Mozilla/5.0' })
+
+    expect(visitor.ipAddress).toBe('83.250.10.4')
+  })
 })

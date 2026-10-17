@@ -1,4 +1,4 @@
-import { type DeviceType, type OperatingSystem } from './Visitor.js'
+import { type DeviceType, type OperatingSystem } from './types.js'
 
 /**
  * A Parsing class that analyzes user agent strings to determine the device type of a visitor.

@@ -1,76 +1,102 @@
 import { Visitor } from './Visitor.js'
+import { type VisitRequest } from './types.js'
 import { UserAgentParser } from './UserAgentParser.js'
 import { VisitorKey } from './VisitorKey.js'
+import { VisitorNotifier, type NewVisitorListener } from './VisitorNotifier.js'
 
 /**
- * A type representing visitor information, including an optional IP address and a user agent string.
+ * Keeps track of the visitors to a site.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
- * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
- */
-type VisitRequest = {
-  ipAddress?: string
-  userAgent: string
-}
-
-/**
- * A class representing a visitor tracker that manages a collection of visitors.
- *
- * The VisitorTracker class maintains a unique ID and a map of visitors, allowing for the tracking and management of visitor data.
+ * A visitor is recognised by the address and browser the visit was made from, so the same
+ * browser from the same address keeps its id across visits. Everything is kept in memory,
+ * which means the visitors are lost when the process restarts.
  */
 export class VisitorTracker {
   private lastAssignedId: number
   private visitors = new Map<string, Visitor>()
   private parser = new UserAgentParser()
+  private notifier = new VisitorNotifier()
 
   /**
-   * Constructor for the VisitorTracker class.
-   *
-   * Initializes a new instance of the VisitorTracker class with a unique ID.
-   * The unique ID is set to 0 by default.
+   * Creates a tracker with no visitors.
    */
   constructor() {
     this.lastAssignedId = 0
   }
 
   /**
-   * Gets all visitors tracked so far.
+   * Registers a function to call whenever someone visits for the first time.
    *
-   * @returns A map containing the visitors.
+   * Returning visitors do not trigger it. Several functions can be registered, and they
+   * are called in the order they were added.
+   *
+   * @param listener - The function to call with the new visitor.
    */
-  getVisitors() {
-    return this.visitors
+  onNewVisitor(listener: NewVisitorListener): void {
+    this.notifier.add(listener)
   }
 
   /**
-   * Gets the number of unique visitors tracked so far.
+   * Gets every visitor tracked so far.
    *
-   * @returns The unique ID.
+   * The returned map is a copy, so changing it does not affect the tracker.
+   *
+   * @returns A copy of the tracked visitors, keyed by their internal lookup key.
+   */
+  getVisitors() {
+    return new Map(this.visitors)
+  }
+
+  /**
+   * Gets a single visitor by the id they were given.
+   *
+   * @param id - The id to look for.
+   * @returns The visitor with that id, or undefined when no visitor has it.
+   */
+  getVisitorById(id: number): Visitor | undefined {
+    for (const visitor of this.visitors.values()) {
+      if (visitor.uniqueId === id) {
+        return visitor
+      }
+    }
+    return undefined
+  }
+
+  /**
+   * Gets the id that was given to the most recently created visitor.
+   *
+   * @deprecated Since 0.2.0. The name reads as if it returns a visitor's own id, but the
+   *   value is the one handed out most recently, and it changes every time a new visitor
+   *   arrives. To get a visitor's id, read `uniqueId` on the visitor returned by
+   *   {@link track}, or look the visitor up with {@link getVisitorById}. The method is
+   *   kept so that existing code keeps working.
+   * @returns The last assigned id, or 0 when no visitor has been tracked yet.
    */
   getUniqueId() {
     return this.lastAssignedId
   }
 
   /**
-   * Gets the visitors size stored.
+   * Gets the number of unique visitors tracked so far.
    *
-   * @returns The count of visitors.
+   * @returns The number of visitors.
    */
   getVisitorCount() {
     return this.visitors.size
   }
 
   /**
-   * Tracks the visitors in the siteVisitor map.
+   * Tracks a visit to the site.
    *
-   * If the visitor has not already visited the site, a new Visitor object is created and added to the map.
+   * A visit from an address and browser that has been seen before returns the existing
+   * visitor, so the id stays the same. Any other visit creates and stores a new visitor.
    *
-   * @param request - An object containing visitor information, including an optional IP address and a user agent string.
+   * @param request - The address and user agent the visit was made from.
    * @returns The visitor, either newly created or previously stored.
    */
   track(request: VisitRequest) {
-    const key = new VisitorKey(request).toString()
-    const alreadyVisited = this.visitors.get(key)
+    const key = new VisitorKey(request)
+    const alreadyVisited = this.visitors.get(key.toString())
     if (alreadyVisited) {
       return alreadyVisited
     }
@@ -78,22 +104,23 @@ export class VisitorTracker {
   }
 
   /**
-   * Creates a visitor for a request that has not been seen before, and stores it.
+   * Creates a visitor for a visit that has not been seen before, and stores it.
    *
-   * @param key - The key the visitor is stored under.
+   * @param key - The key the visitor is recognised and stored by.
    * @param request - The address and user agent the visit was made from.
    * @returns The newly created visitor.
    */
-  private registerNewVisitor(key: string, request: VisitRequest): Visitor {
+  private registerNewVisitor(key: VisitorKey, request: VisitRequest): Visitor {
     this.lastAssignedId++
     const visitor = new Visitor({
       uniqueId: this.lastAssignedId,
-      ipAddress: request.ipAddress,
-      location: 'Unknown',
+      ipAddress: key.getIpAddress(),
+      location: request.location ?? 'Unknown',
       deviceType: this.parser.parseDeviceType(request.userAgent),
       operatingSystem: this.parser.parseOperatingSystem(request.userAgent),
     })
-    this.visitors.set(key, visitor)
+    this.visitors.set(key.toString(), visitor)
+    this.notifier.announce(visitor)
     return visitor
   }
 }

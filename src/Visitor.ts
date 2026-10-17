@@ -1,3 +1,8 @@
+import { type DeviceType, type OperatingSystem } from './types.js'
+
+/**
+ * Everything a visitor is made of, once it has been worked out from a visit.
+ */
 type VisitorData = {
   uniqueId: number
   ipAddress?: string
@@ -6,11 +11,11 @@ type VisitorData = {
   operatingSystem: OperatingSystem
 }
 
-export type DeviceType = 'Desktop' | 'Mobile' | 'Tablet' | 'Tv' | 'Unknown'
-export type OperatingSystem = 'Windows' | 'MacOs' | 'IOS' | 'Android' | 'Linux' | 'Unknown'
-
 /**
- * A class representing a visitor with various properties such as unique ID, IP address, location, device type, and operating system.
+ * One visitor to the site.
+ *
+ * A visitor is settled when it is created and never changes afterwards, so the same
+ * visitor can be handed out again on a later visit without anyone being able to alter it.
  */
 export class Visitor {
   readonly uniqueId: number
@@ -20,11 +25,9 @@ export class Visitor {
   readonly operatingSystem: OperatingSystem
 
   /**
-   * Constructor for the Visitor class.
+   * Creates a visitor from what was worked out about a visit.
    *
-   * Initializes a new instance of the Visitor class with the provided visitor data.
-   *
-   * @param visitor - Object data containing the visitor's unique data.
+   * @param visitor - The id, address, place, device and system of the visitor.
    */
   constructor(visitor: VisitorData) {
     this.uniqueId = visitor.uniqueId

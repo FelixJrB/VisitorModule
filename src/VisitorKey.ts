@@ -1,11 +1,4 @@
-/**
- * The information a visitor is identified by: the address the request came from and the
- * browser that sent it.
- */
-type VisitorIdentity = {
-  ipAddress?: string
-  userAgent: string
-}
+import { type VisitRequest } from './types.js'
 
 /**
  * The lookup key that identifies one visitor.
@@ -15,6 +8,7 @@ type VisitorIdentity = {
  * machine reaches a Node server in several notations.
  */
 export class VisitorKey {
+  private readonly normalizedIpAddress: string
   private readonly value: string
 
   /**
@@ -22,8 +16,33 @@ export class VisitorKey {
    *
    * @param visit - The address and user agent the visit was made from.
    */
-  constructor(visit: VisitorIdentity) {
-    this.value = `${this.normalizeIpAddress(visit.ipAddress)}|${visit.userAgent}`
+  constructor(visit: VisitRequest) {
+    this.normalizedIpAddress = this.normalizeIpAddress(visit.ipAddress)
+    this.value = `${this.normalizedIpAddress}|${visit.userAgent}`
+  }
+
+  /**
+   * The key in the form used to look the visitor up.
+   *
+   * @returns The normalised key.
+   */
+  toString(): string {
+    return this.value
+  }
+
+  /**
+   * The address of the visit, in one single notation.
+   *
+   * This is the form worth storing and showing, since the same machine otherwise appears
+   * under several spellings.
+   *
+   * @returns The normalised address, or undefined when the visit had no address.
+   */
+  getIpAddress(): string | undefined {
+    if (this.normalizedIpAddress === UNKNOWN_ADDRESS) {
+      return undefined
+    }
+    return this.normalizedIpAddress
   }
 
   /**
@@ -38,7 +57,7 @@ export class VisitorKey {
    */
   private normalizeIpAddress(ipAddress?: string): string {
     if (!ipAddress) {
-      return 'unknown-address'
+      return UNKNOWN_ADDRESS
     }
 
     const address = ipAddress.trim().toLowerCase()
@@ -53,13 +72,10 @@ export class VisitorKey {
 
     return address
   }
-
-  /**
-   * The key in the form used to look the visitor up.
-   *
-   * @returns The normalised key.
-   */
-  toString(): string {
-    return this.value
-  }
 }
+
+/**
+ * Stands in for the address when a visit was made without one, so that the key never
+ * contains the text "undefined".
+ */
+const UNKNOWN_ADDRESS = 'unknown-address'
