@@ -1,6 +1,6 @@
 {
   "name": "visitor-module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A Typescript module made for tracking Visitors to a website",
   "type": "module",
   "main": "dist/index.js",
